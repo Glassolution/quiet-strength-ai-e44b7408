@@ -1,0 +1,120 @@
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { OnboardingAnswers } from "@/types/onboarding";
+
+const INITIAL_ANSWERS: OnboardingAnswers = {
+  frequency_impact: null,
+  main_triggers: [],
+  main_triggers_other: null,
+  high_risk_times: [],
+  previous_attempts: [],
+  previous_attempts_other: null,
+  primary_goal: null,
+  consent_privacy: null,
+};
+
+export function useOnboarding(userId: string | undefined) {
+  const [answers, setAnswers] = useState<OnboardingAnswers>(INITIAL_ANSWERS);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const updateAnswer = useCallback(
+    (key: keyof OnboardingAnswers, value: string | string[], otherText?: string) => {
+      setAnswers((prev) => {
+        const updates: Partial<OnboardingAnswers> = {
+          [key]: value,
+        };
+
+        // Handle "other" text fields
+        if (otherText !== undefined) {
+          if (key === "main_triggers") {
+            updates.main_triggers_other = otherText;
+          } else if (key === "previous_attempts") {
+            updates.previous_attempts_other = otherText;
+          }
+        }
+
+        return { ...prev, ...updates };
+      });
+    },
+    []
+  );
+
+  const nextQuestion = useCallback(() => {
+    setCurrentQuestionIndex((prev) => prev + 1);
+  }, []);
+
+  const previousQuestion = useCallback(() => {
+    setCurrentQuestionIndex((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  const saveAnswers = useCallback(async () => {
+    if (!userId) return { error: new Error("User not authenticated") };
+
+    setIsSaving(true);
+    try {
+      // Upsert onboarding answers
+      const { error: answersError } = await supabase
+        .from("onboarding_answers")
+        .upsert({
+          user_id: userId,
+          ...answers,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (answersError) throw answersError;
+
+      // Update profile to mark onboarding as completed
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ onboarding_completed: true })
+        .eq("user_id", userId);
+
+      if (profileError) throw profileError;
+
+      setIsCompleted(true);
+      return { error: null };
+    } catch (error) {
+      return { error };
+    } finally {
+      setIsSaving(false);
+    }
+  }, [userId, answers]);
+
+  const loadExistingAnswers = useCallback(async () => {
+    if (!userId) return;
+
+    const { data } = await supabase
+      .from("onboarding_answers")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (data) {
+      setAnswers({
+        frequency_impact: data.frequency_impact,
+        main_triggers: data.main_triggers || [],
+        main_triggers_other: data.main_triggers_other,
+        high_risk_times: data.high_risk_times || [],
+        previous_attempts: data.previous_attempts || [],
+        previous_attempts_other: data.previous_attempts_other,
+        primary_goal: data.primary_goal,
+        consent_privacy: data.consent_privacy,
+      });
+    }
+  }, [userId]);
+
+  return {
+    answers,
+    currentQuestionIndex,
+    isCompleted,
+    isSaving,
+    updateAnswer,
+    nextQuestion,
+    previousQuestion,
+    saveAnswers,
+    loadExistingAnswers,
+    setIsCompleted,
+  };
+}
