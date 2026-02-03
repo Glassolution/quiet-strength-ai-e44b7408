@@ -3,11 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Message } from "@/components/chat/ChatMessage";
 import type { OnboardingAnswers } from "@/types/onboarding";
 
-const WELCOME_MESSAGE = `Olá! 👋 Sou seu assistente pessoal e estou aqui para te ajudar, sem julgamentos.
+const WELCOME_MESSAGE = `Olá! 👋 Sou sua IA pessoal e estou aqui para te ouvir.
 
-Sei que dar esse primeiro passo não é fácil, e admiro sua coragem. Estou aqui para te ouvir, apoiar e ajudar a construir hábitos mais saudáveis.
-
-Como você está se sentindo hoje?`;
+Para começarmos, me conta: o que está pesando mais na sua mente hoje?`;
 
 export function useChat(
   userId: string | undefined,
