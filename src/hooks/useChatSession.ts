@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const FREE_MESSAGES_PER_DAY = 3;
+export const FREE_MESSAGES_PER_DAY = 5;
+export const CREDITS_PER_MESSAGE = 10;
 
 interface ChatSession {
   id: string;
@@ -15,12 +16,12 @@ export function useChatSession(userId: string | undefined, isPremium: boolean) {
   const [session, setSession] = useState<ChatSession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const messagesRemaining = isPremium
-    ? Infinity
-    : Math.max(0, FREE_MESSAGES_PER_DAY - (session?.messages_used_today || 0));
+  const messagesUsed = session?.messages_used_today || 0;
+  const messagesRemaining = Math.max(0, FREE_MESSAGES_PER_DAY - messagesUsed);
+  const creditsRemaining = isPremium ? Infinity : messagesRemaining * CREDITS_PER_MESSAGE;
 
   // Allow sending if user has messages remaining OR if they are at the limit (to trigger the blurred response)
-  const canSendMessage = isPremium || (session?.messages_used_today || 0) <= FREE_MESSAGES_PER_DAY;
+  const canSendMessage = isPremium || messagesUsed <= FREE_MESSAGES_PER_DAY;
 
   useEffect(() => {
     if (!userId) {
@@ -88,6 +89,7 @@ export function useChatSession(userId: string | undefined, isPremium: boolean) {
     session,
     loading,
     messagesRemaining: isPremium ? undefined : messagesRemaining,
+    creditsRemaining: isPremium ? undefined : creditsRemaining,
     canSendMessage,
     incrementMessageCount,
   };

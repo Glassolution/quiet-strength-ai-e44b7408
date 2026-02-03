@@ -76,7 +76,7 @@ export function ChatMessage({ message, isBlurred, onUnlock }: ChatMessageProps) 
               <div className="bg-background/80 p-4 rounded-xl border border-primary/20 shadow-lg animate-in zoom-in-95 duration-300">
                 <Lock className="w-6 h-6 text-primary mx-auto mb-2" />
                 <p className="text-sm font-medium mb-3 max-w-[200px]">
-                  Desbloqueie para continuar essa conversa e receber apoio completo.
+                  Sou uma IA e posso continuar te acompanhando se você desbloquear o Premium.
                 </p>
                 <Button size="sm" onClick={onUnlock} className="w-full">
                   Desbloquear Premium

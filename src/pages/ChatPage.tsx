@@ -8,7 +8,6 @@ import { QuickActions } from "@/components/chat/QuickActions";
 import { OnboardingQuestion } from "@/components/onboarding/OnboardingQuestion";
 import { OnboardingSummary } from "@/components/onboarding/OnboardingSummary";
 import { PremiumPaywall } from "@/components/premium/PremiumPaywall";
-import { UpgradeCTA } from "@/components/premium/UpgradeCTA";
 import { Logo } from "@/components/icons/Logo";
 import { useChat } from "@/hooks/useChat";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -45,7 +44,6 @@ export function ChatPage({
 
   const [phase, setPhase] = useState<ChatPhase>(getInitialPhase);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [showUpgradeCTA, setShowUpgradeCTA] = useState(false);
 
   const {
     answers,
@@ -58,7 +56,7 @@ export function ChatPage({
     loadExistingAnswers,
   } = useOnboarding(userId);
 
-  const { messagesRemaining, canSendMessage, incrementMessageCount, session } =
+  const { messagesRemaining, creditsRemaining, canSendMessage, incrementMessageCount, session } =
     useChatSession(userId, isPremium);
 
   const { messages, isTyping, error, sendMessage } = useChat(
@@ -66,11 +64,8 @@ export function ChatPage({
     answers,
     () => {
       incrementMessageCount();
-      // Show upgrade CTA after each AI response in free mode
-      if (!isPremium) {
-        setShowUpgradeCTA(true);
-      }
-    }
+    },
+    messagesRemaining === 1
   );
 
   useEffect(() => {
@@ -152,7 +147,6 @@ export function ChatPage({
       setShowPaywall(true);
       return;
     }
-    setShowUpgradeCTA(false);
     sendMessage(content);
   };
 
@@ -234,13 +228,6 @@ export function ChatPage({
 
             {isTyping && <TypingIndicator />}
 
-            {showUpgradeCTA && !isPremium && !isTyping && (
-              <UpgradeCTA
-                onUpgrade={() => setShowPaywall(true)}
-                messagesRemaining={messagesRemaining}
-              />
-            )}
-
             {showQuickActions && !isTyping && (
               <div className="pt-4 fade-in">
                 <p className="text-sm text-muted-foreground mb-3 text-center">
@@ -274,13 +261,6 @@ export function ChatPage({
 
             {isTyping && <TypingIndicator />}
 
-            {showUpgradeCTA && !isTyping && (
-              <UpgradeCTA
-                onUpgrade={() => setShowPaywall(true)}
-                messagesRemaining={messagesRemaining}
-              />
-            )}
-
             {showQuickActions && !isTyping && (
               <div className="pt-4 fade-in">
                 <p className="text-sm text-muted-foreground mb-3 text-center">
@@ -303,8 +283,8 @@ export function ChatPage({
             disabled={isTyping || (!canSendMessage && !isPremium)}
           />
           <p className="text-xs text-muted-foreground text-center mt-2">
-            {!isPremium && messagesRemaining !== undefined
-              ? `${messagesRemaining} mensagens gratuitas restantes hoje`
+            {!isPremium && creditsRemaining !== undefined
+              ? `${creditsRemaining} créditos disponíveis`
               : "Suas conversas são privadas e seguras"}
           </p>
         </div>

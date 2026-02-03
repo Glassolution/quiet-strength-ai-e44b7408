@@ -12,7 +12,8 @@ Como você está se sentindo hoje?`;
 export function useChat(
   userId: string | undefined,
   onboardingAnswers: OnboardingAnswers | null,
-  onMessageSent?: () => void
+  onMessageSent?: () => void,
+  isLastFreeMessage?: boolean
 ) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -130,6 +131,7 @@ export function useChat(
             body: JSON.stringify({
               messages: apiMessages,
               onboardingContext: onboardingAnswers,
+              isLastFreeMessage,
             }),
           }
         );
@@ -239,7 +241,7 @@ export function useChat(
         setIsTyping(false);
       }
     },
-    [userId, messages, onboardingAnswers, onMessageSent]
+    [userId, messages, onboardingAnswers, onMessageSent, isLastFreeMessage]
   );
 
   return {
