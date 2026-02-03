@@ -6,8 +6,8 @@ import { Logo } from "@/components/icons/Logo";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthFormProps {
-  onSignIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  onSignUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  onSignIn: (email: string, password: string) => Promise<{ data?: any; error: Error | null }>;
+  onSignUp: (email: string, password: string) => Promise<{ data?: any; error: Error | null }>;
   onBack: () => void;
 }
 
@@ -23,7 +23,7 @@ export function AuthForm({ onSignIn, onSignUp, onBack }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const { error } = isSignUp
+      const { data, error } = isSignUp
         ? await onSignUp(email, password)
         : await onSignIn(email, password);
 
@@ -34,10 +34,17 @@ export function AuthForm({ onSignIn, onSignUp, onBack }: AuthFormProps) {
           variant: "destructive",
         });
       } else if (isSignUp) {
-        toast({
-          title: "Conta criada!",
-          description: "Verifique seu email para confirmar a conta.",
-        });
+        if (data?.session) {
+          toast({
+            title: "Conta criada!",
+            description: "Bem-vindo(a)!",
+          });
+        } else {
+          toast({
+            title: "Conta criada!",
+            description: "Verifique seu email para confirmar a conta.",
+          });
+        }
       }
     } catch (err) {
       toast({
