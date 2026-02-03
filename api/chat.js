@@ -1,7 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-
 export const config = {
-  runtime: "edge",
+  runtime: 'edge',
 };
 
 const SYSTEM_PROMPT = `Você é uma IA de apoio emocional. Seja comum, objetiva e converse de igual para igual.
@@ -41,7 +39,7 @@ Evite ser filosófica, profunda demais ou terapêutica demais sem necessidade. R
 
 Se o usuário demonstrar risco iminente de autoagressão ou suicídio, seja diretivo e recomende o CVV (188) ou ajuda médica imediatamente.`;
 
-export default async function handler(req: Request) {
+export default async function handler(req) {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: {

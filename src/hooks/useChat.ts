@@ -199,104 +199,105 @@ export function useChat(
   };
 }
 
-      // Call onMessageSent callback (for incrementing message count)
-      onMessageSent?.();
-
       try {
-        // Get auth session for the request
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.map((m) => ({ role: m.role, content: m.content })),
+              { role: "user", content },
+            ],
+            onboardingContext: onboardingAnswers
+              ? {
+                  frequency_impact: onboardingAnswers["frequency_impact"],
+                  main_triggers: onboardingAnswers["main_triggers"],
+                  high_risk_times: onboardingAnswers["high_risk_times"],
+                  previous_attempts: onboardingAnswers["previous_attempts"],
+                  primary_goal: onboardingAnswers["primary_goal"],
+                }
+              : null,
+            isLastFreeMessage,
+          }),
+        });
 
-        if (!session) {
-          throw new Error("Not authenticated");
-        }
+        if (!response.ok) throw new Error("Falha na comunicação com a IA");
+        if (!response.body) throw new Error("Resposta vazia da IA");
 
-        // Prepare messages for API (last 20 messages for context)
-        const apiMessages = [...messages, userMessage].slice(-20).map((m) => ({
-          role: m.role,
-          content: m.content,
-        }));
-
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              messages: apiMessages,
-              onboardingContext: onboardingAnswers,
-              isLastFreeMessage,
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          if (response.status === 429) {
-            throw new Error("Muitas requisições. Tente novamente em alguns segundos.");
-          }
-          if (response.status === 402) {
-            throw new Error("Limite de uso atingido.");
-          }
-          throw new Error("Erro ao conectar com a IA");
-        }
-
-        if (!response.body) {
-          throw new Error("No response body");
-        }
-
-        // Stream the response
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let assistantContent = "";
-        let textBuffer = "";
+        let aiResponse = "";
+        
+        // Create placeholder for AI message
+        const aiMessageId = `ai-${Date.now()}`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: aiMessageId,
+            role: "assistant",
+            content: "",
+            timestamp: new Date(),
+          },
+        ]);
 
-        const updateAssistantMessage = (content: string) => {
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "assistant" && last.id.startsWith("ai-streaming")) {
-              return prev.map((m, i) =>
-                i === prev.length - 1 ? { ...m, content } : m
-              );
-            }
-            return [
-              ...prev,
-              {
-                id: "ai-streaming",
-                role: "assistant" as const,
-                content,
-                timestamp: new Date(),
-              },
-            ];
-          });
-        };
-
-        let streamDone = false;
-        while (!streamDone) {
+        while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          textBuffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex: number;
-          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-            let line = textBuffer.slice(0, newlineIndex);
-            textBuffer = textBuffer.slice(newlineIndex + 1);
-
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (line.startsWith(":") || line.trim() === "") continue;
-            if (!line.startsWith("data: ")) continue;
-
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") {
-              streamDone = true;
-              break;
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+          
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.choices?.[0]?.delta?.content) {
+                  aiResponse += data.choices[0].delta.content;
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMessageId
+                        ? { ...msg, content: aiResponse }
+                        : msg
+                    )
+                  );
+                }
+              } catch (e) {
+                console.error("Error parsing stream:", e);
+              }
             }
+          }
+        }
 
-            try {
+        // Save AI message to database
+        await supabase.from("chat_messages").insert({
+          user_id: userId,
+          role: "assistant",
+          content: aiResponse,
+        });
+
+        if (onMessageSent) {
+          onMessageSent();
+        }
+      } catch (err) {
+        console.error("Chat error:", err);
+        setError("Não foi possível conectar com a IA. Tente novamente.");
+        setIsTyping(false);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [userId, messages, onboardingAnswers, onMessageSent, isLastFreeMessage]
+  );
+
+  return {
+    messages,
+    isTyping,
+    error,
+    sendMessage,
+  };
+}
               const parsed = JSON.parse(jsonStr);
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
