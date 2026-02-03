@@ -23,7 +23,7 @@ export function ChatMessage({ message, isBlurred, onUnlock }: ChatMessageProps) 
   return (
     <div
       className={cn(
-        "flex gap-3 slide-up animate-in fade-in duration-500",
+        "flex gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >

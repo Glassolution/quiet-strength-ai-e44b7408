@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Message } from "@/components/chat/ChatMessage";
 import type { OnboardingAnswers } from "@/types/onboarding";
 
-const WELCOME_MESSAGE = `Olá! 👋 Sou sua IA pessoal e estou aqui para te ouvir.
+const WELCOME_MESSAGE = `Olá! 👋 Percebi que você chegou até aqui buscando algo. Talvez um alívio, uma resposta ou apenas alguém para ouvir.
 
-Para começarmos, me conta: o que está pesando mais na sua mente hoje?`;
+O que você sente que precisa mudar hoje para ficar um pouco melhor?`;
 
 export function useChat(
   userId: string | undefined,
@@ -98,6 +98,106 @@ export function useChat(
         role: "user",
         content,
       });
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.map((m) => ({ role: m.role, content: m.content })),
+              { role: "user", content },
+            ],
+            onboardingContext: onboardingAnswers
+              ? {
+                  frequency_impact: onboardingAnswers["frequency_impact"],
+                  main_triggers: onboardingAnswers["main_triggers"],
+                  high_risk_times: onboardingAnswers["high_risk_times"],
+                  previous_attempts: onboardingAnswers["previous_attempts"],
+                  primary_goal: onboardingAnswers["primary_goal"],
+                }
+              : null,
+            isLastFreeMessage,
+          }),
+        });
+
+        if (!response.ok) throw new Error("Falha na comunicação com a IA");
+        if (!response.body) throw new Error("Resposta vazia da IA");
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let aiResponse = "";
+        
+        // Create placeholder for AI message
+        const aiMessageId = `ai-${Date.now()}`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: aiMessageId,
+            role: "assistant",
+            content: "",
+            timestamp: new Date(),
+          },
+        ]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+          
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.choices?.[0]?.delta?.content) {
+                  aiResponse += data.choices[0].delta.content;
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMessageId
+                        ? { ...msg, content: aiResponse }
+                        : msg
+                    )
+                  );
+                }
+              } catch (e) {
+                console.error("Error parsing stream:", e);
+              }
+            }
+          }
+        }
+
+        // Save AI message to database
+        await supabase.from("chat_messages").insert({
+          user_id: userId,
+          role: "assistant",
+          content: aiResponse,
+        });
+
+        if (onMessageSent) {
+          onMessageSent();
+        }
+      } catch (err) {
+        console.error("Chat error:", err);
+        setError("Não foi possível conectar com a IA. Tente novamente.");
+        setIsTyping(false);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [userId, messages, onboardingAnswers, onMessageSent, isLastFreeMessage]
+  );
+
+  return {
+    messages,
+    isTyping,
+    error,
+    sendMessage,
+  };
+}
 
       // Call onMessageSent callback (for incrementing message count)
       onMessageSent?.();
