@@ -21,7 +21,7 @@ export function ChatHeader({ onBack }: ChatHeaderProps) {
         <div className="flex items-center gap-2">
           <Logo size="sm" />
           <div>
-            <h1 className="font-semibold text-sm">Liberta</h1>
+            <h1 className="font-semibold text-sm">Axon</h1>
             <p className="text-xs text-muted-foreground">
               Seu assistente pessoal
             </p>

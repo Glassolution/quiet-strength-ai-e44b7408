@@ -55,7 +55,11 @@ export function PremiumPaywall({
           ))}
         </div>
 
-        <Button onClick={onSubscribe} className="w-full" size="lg">
+        <Button 
+          onClick={onSubscribe} 
+          className="w-full whitespace-normal h-auto py-4 text-sm leading-tight" 
+          size="lg"
+        >
           Seja Premium para continuar a falar com a IA
         </Button>
 

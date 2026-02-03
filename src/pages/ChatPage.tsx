@@ -12,7 +12,7 @@ import { UpgradeCTA } from "@/components/premium/UpgradeCTA";
 import { Logo } from "@/components/icons/Logo";
 import { useChat } from "@/hooks/useChat";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { useChatSession } from "@/hooks/useChatSession";
+import { useChatSession, FREE_MESSAGES_PER_DAY } from "@/hooks/useChatSession";
 import { ONBOARDING_QUESTIONS } from "@/types/onboarding";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,7 +58,7 @@ export function ChatPage({
     loadExistingAnswers,
   } = useOnboarding(userId);
 
-  const { messagesRemaining, canSendMessage, incrementMessageCount } =
+  const { messagesRemaining, canSendMessage, incrementMessageCount, session } =
     useChatSession(userId, isPremium);
 
   const { messages, isTyping, error, sendMessage } = useChat(
@@ -165,7 +165,7 @@ export function ChatPage({
 
       {/* Progress Tracker */}
       <div className="px-4 py-3">
-        <ProgressTracker daysFree={3} />
+        <ProgressTracker />
       </div>
 
       {/* Messages Area */}
@@ -215,9 +215,22 @@ export function ChatPage({
         {/* Chat Phase */}
         {phase === "chat" && (
           <>
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
+            {messages.map((message, index) => {
+              const isLastMessage = index === messages.length - 1;
+              const used = session?.messages_used_today || 0;
+              const isLimitExceeded = !isPremium && used > FREE_MESSAGES_PER_DAY;
+              const shouldBlur =
+                isLimitExceeded && isLastMessage && message.role === "assistant";
+
+              return (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isBlurred={shouldBlur}
+                  onUnlock={() => setShowPaywall(true)}
+                />
+              );
+            })}
 
             {isTyping && <TypingIndicator />}
 
@@ -242,9 +255,22 @@ export function ChatPage({
         {/* Paywall Phase (shows messages behind paywall) */}
         {phase === "paywall" && !showPaywall && (
           <>
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
-            ))}
+            {messages.map((message, index) => {
+              const isLastMessage = index === messages.length - 1;
+              const used = session?.messages_used_today || 0;
+              const isLimitExceeded = !isPremium && used > FREE_MESSAGES_PER_DAY;
+              const shouldBlur =
+                isLimitExceeded && isLastMessage && message.role === "assistant";
+
+              return (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isBlurred={shouldBlur}
+                  onUnlock={() => setShowPaywall(true)}
+                />
+              );
+            })}
 
             {isTyping && <TypingIndicator />}
 

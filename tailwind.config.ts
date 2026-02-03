@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Manrope', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -72,6 +73,12 @@ export default {
         'soft': '0 2px 20px -5px rgba(0, 0, 0, 0.05)',
         'medium': '0 4px 30px -8px rgba(0, 0, 0, 0.1)',
         'glow': '0 0 40px -10px hsl(var(--primary) / 0.3)',
+      },
+      backgroundImage: {
+        'primary-gradient': 'var(--gradient-primary)',
+        'hero-gradient': 'var(--gradient-hero)',
+        'card-gradient': 'var(--gradient-card)',
+        'body-gradient': 'var(--gradient-body)',
       },
       keyframes: {
         "accordion-down": {

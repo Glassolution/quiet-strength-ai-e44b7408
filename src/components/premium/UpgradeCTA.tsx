@@ -22,7 +22,11 @@ export function UpgradeCTA({ onUpgrade, messagesRemaining }: UpgradeCTAProps) {
           <p className="text-xs text-muted-foreground mb-3">
             Desbloqueie conversas ilimitadas e plano personalizado
           </p>
-          <Button onClick={onUpgrade} size="sm" className="w-full">
+          <Button 
+            onClick={onUpgrade} 
+            size="sm" 
+            className="w-full whitespace-normal h-auto py-3 text-xs sm:text-sm leading-tight"
+          >
             Seja Premium para continuar a falar com a IA
           </Button>
         </div>

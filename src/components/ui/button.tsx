@@ -10,17 +10,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]",
+          "bg-primary-gradient text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] border border-white/10",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-border bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-white/20 bg-transparent text-white hover:bg-white/5 hover:text-white hover:border-white/40",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-transparent border border-white/10 text-white hover:bg-white/5 hover:border-white/30 backdrop-blur-sm",
+        ghost: "hover:bg-white/5 hover:text-white",
         link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-primary text-primary-foreground px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03] active:scale-[0.98]",
-        subtle: "bg-accent text-accent-foreground hover:bg-accent/80",
+        hero: "bg-primary-gradient text-white px-8 py-4 text-base font-semibold shadow-lg shadow-primary/30 hover:shadow-2xl hover:shadow-primary/50 hover:scale-[1.03] active:scale-[0.98] border border-white/10",
+        subtle: "bg-white/5 text-white hover:bg-white/10 border border-white/5",
       },
       size: {
         default: "h-11 px-5 py-2.5",

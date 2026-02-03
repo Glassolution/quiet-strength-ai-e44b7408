@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/icons/Logo";
-import { Shield, Lock, Heart } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { ArrowRight, Sparkles, Activity, Calendar } from "lucide-react";
 
 interface HeroProps {
   onStartChat: () => void;
@@ -8,75 +9,118 @@ interface HeroProps {
 
 export function Hero({ onStartChat }: HeroProps) {
   return (
-    <section className="min-h-screen flex flex-col">
+    <section className="relative min-h-screen flex flex-col overflow-hidden selection:bg-primary/20">
+      {/* Background Blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="blob top-0 left-1/4 -translate-x-1/2 opacity-40 animate-pulse" style={{ animationDuration: "8s" }} />
+        <div className="blob bottom-0 right-1/4 translate-x-1/2 opacity-40 animate-pulse" style={{ animationDuration: "10s", animationDelay: "1s" }} />
+      </div>
+
       {/* Header */}
-      <header className="w-full px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <header className="relative z-50 w-full px-6 py-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Logo size="sm" />
-            <span className="font-semibold text-foreground">Liberta</span>
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
+              <Logo size="sm" className="relative" />
+            </div>
+            <span className="font-display font-bold text-xl tracking-tight">Axon</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={onStartChat}>
-            Entrar
-          </Button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Button variant="ghost" className="font-medium hover:bg-primary/10" onClick={onStartChat}>
+              Entrar
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Main Hero */}
-      <main className="flex-1 flex items-center justify-center px-6 pb-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="fade-in-up" style={{ animationDelay: "0.1s" }}>
-            <Logo size="lg" className="mx-auto mb-8" />
+      {/* Main Content */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-10 pb-20">
+        <div className="max-w-5xl mx-auto w-full grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Column: Text */}
+          <div className="text-center lg:text-left space-y-8 max-w-2xl mx-auto lg:mx-0">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border-primary/20 text-primary text-sm font-medium animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <Sparkles className="w-4 h-4" />
+              <span>Inteligência Artificial Avançada</span>
+            </div>
+            
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+              Sua mente, <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600 dark:to-blue-400">
+                fortalecida.
+              </span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+              Converse, acompanhe seu progresso e receba apoio diário para vencer o vício. 
+              Privacidade total, sem julgamentos.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+              <Button 
+                size="xl" 
+                onClick={onStartChat}
+                className="w-full sm:w-auto rounded-full px-8 text-lg h-14 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300"
+              >
+                Começar Agora
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                100% gratuito e anônimo
+              </p>
+            </div>
           </div>
 
-          <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground leading-tight mb-6 fade-in-up text-balance"
-            style={{ animationDelay: "0.2s" }}
-          >
-            Uma IA criada para te ajudar a{" "}
-            <span className="gradient-text">retomar o controle</span>
-          </h1>
-
-          <p
-            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto fade-in-up text-balance"
-            style={{ animationDelay: "0.3s" }}
-          >
-            Converse, acompanhe seu progresso e receba apoio diário para vencer
-            o vício em pornografia — com privacidade total.
-          </p>
-
-          <div
-            className="fade-in-up"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <Button variant="hero" size="xl" onClick={onStartChat}>
-              Começar agora
-            </Button>
-          </div>
-
-          {/* Trust indicators */}
-          <div
-            className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground fade-in-up"
-            style={{ animationDelay: "0.5s" }}
-          >
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-primary" />
-              <span>100% Privado</span>
+          {/* Right Column: Floating Cards Visual */}
+          <div className="relative h-[400px] md:h-[500px] w-full hidden lg:block perspective-1000">
+            {/* Central Card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 glass-card p-6 rounded-2xl glow-border animate-in zoom-in duration-1000 delay-300">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Logo size="sm" />
+                </div>
+                <div>
+                  <div className="h-2 w-24 bg-primary/20 rounded-full mb-2" />
+                  <div className="h-2 w-16 bg-primary/10 rounded-full" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="h-2 w-full bg-muted rounded-full" />
+                <div className="h-2 w-5/6 bg-muted rounded-full" />
+                <div className="h-2 w-4/6 bg-muted rounded-full" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />
-              <span>Sem julgamentos</span>
+
+            {/* Floating Card 1: Stats */}
+            <div className="absolute top-20 right-10 glass-card p-4 rounded-xl animate-bounce-slow" style={{ animationDuration: "6s" }}>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/10 rounded-lg text-green-500">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Progresso</div>
+                  <div className="font-bold text-sm">+12% essa semana</div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-primary" />
-              <span>Apoio empático</span>
+
+            {/* Floating Card 2: Calendar */}
+            <div className="absolute bottom-20 left-10 glass-card p-4 rounded-xl animate-bounce-slow" style={{ animationDuration: "7s", animationDelay: "1s" }}>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Sequência</div>
+                  <div className="font-bold text-sm">15 dias limpo</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </main>
-
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 }
