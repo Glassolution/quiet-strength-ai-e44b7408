@@ -1,13 +1,15 @@
+import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/icons/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, Sparkles, Activity, Calendar } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Calendar, User as UserIcon } from "lucide-react";
 
 interface HeroProps {
   onStartChat: () => void;
+  user?: User | null;
 }
 
-export function Hero({ onStartChat }: HeroProps) {
+export function Hero({ onStartChat, user }: HeroProps) {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden selection:bg-primary/20">
       {/* Background Blobs */}
