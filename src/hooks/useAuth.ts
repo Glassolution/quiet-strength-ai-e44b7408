@@ -41,7 +41,13 @@ export function useAuth() {
     );
 
     // Then get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Error getting session:", error);
+        setLoading(false);
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -51,13 +57,23 @@ export function useAuth() {
           .select("*")
           .eq("user_id", session.user.id)
           .single()
-          .then(({ data }) => {
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error getting profile:", error);
+            }
             setProfile(data);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error("Exception getting profile:", err);
             setLoading(false);
           });
       } else {
         setLoading(false);
       }
+    }).catch((err) => {
+      console.error("Exception getting session:", err);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
