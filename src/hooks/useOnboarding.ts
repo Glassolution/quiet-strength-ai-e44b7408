@@ -121,6 +121,8 @@ export function useOnboarding(userId: string | undefined) {
       .from("onboarding_answers")
       .select("*")
       .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) {

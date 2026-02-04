@@ -93,11 +93,15 @@ export function useChat(
       setIsTyping(true);
 
       // Save user message to database
-      await supabase.from("chat_messages").insert({
+      const { error: msgError } = await supabase.from("chat_messages").insert({
         user_id: userId,
         role: "user",
         content,
       });
+
+      if (msgError) {
+        console.error("Error saving chat message:", msgError);
+      }
 
       try {
         const response = await fetch("/api/chat", {
@@ -124,12 +128,16 @@ export function useChat(
         });
 
         if (!response.ok) {
+          if (window.location.hostname === "localhost" && response.status === 404) {
+             throw new Error("Ambiente local: API não encontrada. Use 'vercel dev' ou teste no deploy oficial.");
+          }
           const rawText = await response.text();
           console.error("AI Error Response:", rawText);
           try {
             const errorData = JSON.parse(rawText);
             throw new Error(errorData.error || `Erro ${response.status}: ${rawText}`);
-          } catch {
+          } catch (e) {
+            if (e instanceof Error && e.message.includes("Ambiente local")) throw e;
             throw new Error(`Erro ${response.status}: ${rawText}`);
           }
         }
