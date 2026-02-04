@@ -55,7 +55,8 @@ export default async function handler(req) {
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? process.env.LOVABLE_API_KEY;
     if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+      console.error("Missing API Key configuration");
+      throw new Error("OPENAI_API_KEY is not configured in Vercel environment variables");
     }
 
     // Build personalized system prompt with onboarding context
