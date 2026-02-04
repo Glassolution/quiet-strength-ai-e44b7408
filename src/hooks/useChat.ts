@@ -128,16 +128,16 @@ export function useChat(
         });
 
         if (!response.ok) {
-          if (window.location.hostname === "localhost" && response.status === 404) {
-             throw new Error("Ambiente local: API não encontrada. Use 'vercel dev' ou teste no deploy oficial.");
-          }
           const rawText = await response.text();
           console.error("AI Error Response:", rawText);
           try {
             const errorData = JSON.parse(rawText);
             throw new Error(errorData.error || `Erro ${response.status}: ${rawText}`);
           } catch (e) {
-            if (e instanceof Error && e.message.includes("Ambiente local")) throw e;
+            // If on localhost and 404/500, hint about proxy
+            if (window.location.hostname === "localhost" && (response.status === 404 || response.status === 500)) {
+               console.warn("Proxy configuration might be incorrect or Vercel project not found.");
+            }
             throw new Error(`Erro ${response.status}: ${rawText}`);
           }
         }
