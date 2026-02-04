@@ -111,12 +111,13 @@ export function ChatPage({
   const handleOnboardingComplete = async () => {
     const { error } = await saveAnswers();
     if (error) {
+      console.error("Erro ao salvar onboarding (ignorado para permitir acesso):", error);
+      // Não bloqueia o usuário se falhar o salvamento, para garantir acesso ao chat
       toast({
-        title: "Erro",
-        description: "Não foi possível salvar suas respostas.",
-        variant: "destructive",
+        title: "Aviso",
+        description: "Houve um problema ao salvar suas respostas, mas você pode continuar.",
+        duration: 3000,
       });
-      return;
     }
 
     onProfileUpdate();

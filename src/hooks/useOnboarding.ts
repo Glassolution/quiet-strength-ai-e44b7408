@@ -69,9 +69,12 @@ export function useOnboarding(userId: string | undefined) {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ onboarding_completed: true })
-        .eq("user_id", userId);
+        .eq("id", userId);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.warn("Could not update profile onboarding status", profileError);
+        // Don't throw here, as answering is more important than the flag
+      }
 
       setIsCompleted(true);
       return { error: null };
