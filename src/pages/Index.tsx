@@ -17,23 +17,28 @@ const Index = () => {
   } = useAuth();
 
   const [currentView, setCurrentView] = useState<View>("landing");
+  const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
 
-  // Redirect to chat if user is logged in
+  // Redirect to chat if user is logged in, unless they explicitly went back to landing
   useEffect(() => {
-    if (user && (currentView === "auth" || currentView === "landing")) {
-      setCurrentView("chat");
+    if (user && !hasNavigatedBack) {
+      if (currentView === "auth" || currentView === "landing") {
+        setCurrentView("chat");
+      }
     }
-  }, [user, currentView]);
+  }, [user, currentView, hasNavigatedBack]);
 
   const handleStartChat = () => {
     if (user) {
       setCurrentView("chat");
+      setHasNavigatedBack(false); // Reset this so auto-redirect can happen next time if needed
     } else {
       setCurrentView("auth");
     }
   };
 
   const handleBackToLanding = () => {
+    setHasNavigatedBack(true);
     setCurrentView("landing");
   };
 
