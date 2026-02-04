@@ -53,10 +53,10 @@ export default async function handler(req) {
   try {
     const { messages, onboardingContext, isLastFreeMessage } = await req.json();
 
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? process.env.LOVABLE_API_KEY;
+    const OPENAI_API_KEY = process.env.LOVABLE_API_KEY ?? process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {
       console.error("Missing API Key configuration");
-      throw new Error("OPENAI_API_KEY is not configured in Vercel environment variables");
+      throw new Error("API Key is not configured in Vercel environment variables");
     }
 
     // Build personalized system prompt with onboarding context

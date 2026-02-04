@@ -72,7 +72,8 @@ export function ChatPage({
     () => {
       incrementMessageCount();
     },
-    messagesRemaining === 1
+    messagesRemaining === 1,
+    session?.id
   );
 
   useEffect(() => {

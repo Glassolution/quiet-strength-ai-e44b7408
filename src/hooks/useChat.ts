@@ -11,7 +11,8 @@ export function useChat(
   userId: string | undefined,
   onboardingAnswers: OnboardingAnswers | null,
   onMessageSent?: () => void,
-  isLastFreeMessage?: boolean
+  isLastFreeMessage?: boolean,
+  sessionId?: string
 ) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -47,7 +48,7 @@ export function useChat(
             timestamp: new Date(msg.created_at),
           }))
         );
-      } else {
+      } else if (sessionId) {
         // Insert welcome message
         const { data: newMsg } = await supabase
           .from("chat_messages")
@@ -55,6 +56,7 @@ export function useChat(
             user_id: userId,
             role: "assistant",
             content: WELCOME_MESSAGE,
+            session_id: sessionId
           })
           .select()
           .single();
@@ -73,7 +75,7 @@ export function useChat(
     };
 
     loadMessages();
-  }, [userId]);
+  }, [userId, sessionId]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -97,6 +99,7 @@ export function useChat(
         user_id: userId,
         role: "user",
         content,
+        session_id: sessionId
       });
 
       if (msgError) {
