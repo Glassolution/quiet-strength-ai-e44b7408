@@ -98,7 +98,11 @@ Use essas informações para entender profundamente o contexto do usuário, mas 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Erro ao conectar com a IA" }), {
+      return new Response(JSON.stringify({ 
+        error: "Erro ao conectar com a IA", 
+        details: errorText,
+        status: response.status 
+      }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
