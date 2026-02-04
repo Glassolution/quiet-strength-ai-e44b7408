@@ -189,13 +189,15 @@ export function ChatPage({
                 Pergunta {currentQuestionIndex + 1} de{" "}
                 {ONBOARDING_QUESTIONS.length}
               </div>
-              <OnboardingQuestion
-                question={currentQuestion}
-                onAnswer={handleOnboardingAnswer}
-                onSkip={handleOnboardingSkip}
-                onBack={currentQuestionIndex > 0 ? previousQuestion : undefined}
-                isFirst={currentQuestionIndex === 0}
-              />
+              {currentQuestion && (
+                <OnboardingQuestion
+                  question={currentQuestion}
+                  onAnswer={handleOnboardingAnswer}
+                  onSkip={handleOnboardingSkip}
+                  onBack={currentQuestionIndex > 0 ? previousQuestion : undefined}
+                  isFirst={currentQuestionIndex === 0}
+                />
+              )}
             </div>
           </>
         )}

@@ -20,7 +20,7 @@ const Index = () => {
 
   // Redirect to chat if user is logged in
   useEffect(() => {
-    if (user && currentView === "auth") {
+    if (user && (currentView === "auth" || currentView === "landing")) {
       setCurrentView("chat");
     }
   }, [user, currentView]);
