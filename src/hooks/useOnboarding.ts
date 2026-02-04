@@ -65,7 +65,7 @@ export function useOnboarding(userId: string | undefined) {
         // Create profile if it doesn't exist (fallback for users who missed the trigger)
         const { error: createProfileError } = await supabase
           .from("profiles")
-          .insert({ id: userId, email: (await supabase.auth.getUser()).data.user?.email });
+          .insert({ id: userId });
 
         if (createProfileError) {
            console.error("Failed to create missing profile:", createProfileError);
@@ -73,75 +73,26 @@ export function useOnboarding(userId: string | undefined) {
         }
       }
 
-      // Prepare rows for EAV table structure
-      const rows = [];
-      const timestamp = new Date().toISOString();
-
-      if (answers.frequency_impact) {
-        rows.push({
-          user_id: userId,
-          question_key: "frequency_impact",
-          answer: answers.frequency_impact,
-          updated_at: timestamp,
-        });
-      }
-
-      if (answers.main_triggers && answers.main_triggers.length > 0) {
-        rows.push({
-          user_id: userId,
-          question_key: "main_triggers",
-          answer_array: answers.main_triggers,
-          other_text: answers.main_triggers_other,
-          updated_at: timestamp,
-        });
-      }
-
-      if (answers.high_risk_times && answers.high_risk_times.length > 0) {
-        rows.push({
-          user_id: userId,
-          question_key: "high_risk_times",
-          answer_array: answers.high_risk_times,
-          updated_at: timestamp,
-        });
-      }
-
-      if (answers.previous_attempts && answers.previous_attempts.length > 0) {
-        rows.push({
-          user_id: userId,
-          question_key: "previous_attempts",
-          answer_array: answers.previous_attempts,
-          other_text: answers.previous_attempts_other,
-          updated_at: timestamp,
-        });
-      }
-
-      if (answers.primary_goal) {
-        rows.push({
-          user_id: userId,
-          question_key: "primary_goal",
-          answer: answers.primary_goal,
-          updated_at: timestamp,
-        });
-      }
-
-      if (answers.consent_privacy) {
-        rows.push({
-          user_id: userId,
-          question_key: "consent_privacy",
-          answer: answers.consent_privacy,
-          updated_at: timestamp,
-        });
-      }
+      // Prepare single row for Wide table structure
+      const row = {
+        user_id: userId,
+        frequency_impact: answers.frequency_impact,
+        main_triggers: answers.main_triggers,
+        main_triggers_other: answers.main_triggers_other,
+        high_risk_times: answers.high_risk_times,
+        previous_attempts: answers.previous_attempts,
+        previous_attempts_other: answers.previous_attempts_other,
+        primary_goal: answers.primary_goal,
+        consent_privacy: answers.consent_privacy,
+        updated_at: new Date().toISOString(),
+      };
 
       // Upsert onboarding answers
-      if (rows.length > 0) {
-        // @ts-ignore
-        const { error: answersError } = await supabase
-          .from("onboarding_answers")
-          .upsert(rows, { onConflict: "user_id,question_key" });
+      const { error: answersError } = await supabase
+        .from("onboarding_answers")
+        .upsert(row, { onConflict: "user_id" });
 
-        if (answersError) throw answersError;
-      }
+      if (answersError) throw answersError;
 
       // Update profile to mark onboarding as completed
       const { error: profileError } = await supabase
@@ -166,42 +117,28 @@ export function useOnboarding(userId: string | undefined) {
   const loadExistingAnswers = useCallback(async () => {
     if (!userId) return;
 
-// @ts-ignore
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("onboarding_answers")
       .select("*")
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .maybeSingle();
 
-    if (data && data.length > 0) {
-      const newAnswers = { ...INITIAL_ANSWERS };
-      
-      // @ts-ignore
-      data.forEach((row) => {
-        switch (row.question_key) {
-          case "frequency_impact":
-            newAnswers.frequency_impact = row.answer;
-            break;
-          case "main_triggers":
-            newAnswers.main_triggers = row.answer_array || [];
-            newAnswers.main_triggers_other = row.other_text;
-            break;
-          case "high_risk_times":
-            newAnswers.high_risk_times = row.answer_array || [];
-            break;
-          case "previous_attempts":
-            newAnswers.previous_attempts = row.answer_array || [];
-            newAnswers.previous_attempts_other = row.other_text;
-            break;
-          case "primary_goal":
-            newAnswers.primary_goal = row.answer;
-            break;
-          case "consent_privacy":
-            newAnswers.consent_privacy = row.answer;
-            break;
-        }
+    if (error) {
+      console.error("Error loading onboarding answers:", error);
+      return;
+    }
+
+    if (data) {
+      setAnswers({
+        frequency_impact: data.frequency_impact || "",
+        main_triggers: data.main_triggers || [],
+        main_triggers_other: data.main_triggers_other || "",
+        high_risk_times: data.high_risk_times || [],
+        previous_attempts: data.previous_attempts || [],
+        previous_attempts_other: data.previous_attempts_other || "",
+        primary_goal: data.primary_goal || "",
+        consent_privacy: data.consent_privacy || "",
       });
-      
-      setAnswers(newAnswers);
     }
   }, [userId]);
 
