@@ -121,13 +121,7 @@ export function ChatPage({
     }
 
     onProfileUpdate();
-
-    if (!isPremium) {
-      setPhase("paywall");
-      setShowPaywall(true);
-    } else {
-      setPhase("chat");
-    }
+    setPhase("chat");
   };
 
   const handlePaywallSubscribe = () => {

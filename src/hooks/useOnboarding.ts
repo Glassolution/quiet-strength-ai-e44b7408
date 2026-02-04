@@ -54,16 +54,74 @@ export function useOnboarding(userId: string | undefined) {
 
     setIsSaving(true);
     try {
-      // Upsert onboarding answers
-      const { error: answersError } = await supabase
-        .from("onboarding_answers")
-        .upsert({
-          user_id: userId,
-          ...answers,
-          updated_at: new Date().toISOString(),
-        });
+      // Prepare rows for EAV table structure
+      const rows = [];
+      const timestamp = new Date().toISOString();
 
-      if (answersError) throw answersError;
+      if (answers.frequency_impact) {
+        rows.push({
+          user_id: userId,
+          question_key: "frequency_impact",
+          answer: answers.frequency_impact,
+          updated_at: timestamp,
+        });
+      }
+
+      if (answers.main_triggers && answers.main_triggers.length > 0) {
+        rows.push({
+          user_id: userId,
+          question_key: "main_triggers",
+          answer_array: answers.main_triggers,
+          other_text: answers.main_triggers_other,
+          updated_at: timestamp,
+        });
+      }
+
+      if (answers.high_risk_times && answers.high_risk_times.length > 0) {
+        rows.push({
+          user_id: userId,
+          question_key: "high_risk_times",
+          answer_array: answers.high_risk_times,
+          updated_at: timestamp,
+        });
+      }
+
+      if (answers.previous_attempts && answers.previous_attempts.length > 0) {
+        rows.push({
+          user_id: userId,
+          question_key: "previous_attempts",
+          answer_array: answers.previous_attempts,
+          other_text: answers.previous_attempts_other,
+          updated_at: timestamp,
+        });
+      }
+
+      if (answers.primary_goal) {
+        rows.push({
+          user_id: userId,
+          question_key: "primary_goal",
+          answer: answers.primary_goal,
+          updated_at: timestamp,
+        });
+      }
+
+      if (answers.consent_privacy) {
+        rows.push({
+          user_id: userId,
+          question_key: "consent_privacy",
+          answer: answers.consent_privacy,
+          updated_at: timestamp,
+        });
+      }
+
+      // Upsert onboarding answers
+      if (rows.length > 0) {
+        const { error: answersError } = await supabase
+          .from("onboarding_answers")
+          .upsert(rows, { onConflict: "user_id,question_key" });
+
+        if (answersError) throw answersError;
+      }
 
       // Update profile to mark onboarding as completed
       const { error: profileError } = await supabase

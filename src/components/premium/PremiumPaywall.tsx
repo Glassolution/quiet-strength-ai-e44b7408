@@ -29,7 +29,7 @@ export function PremiumPaywall({
 }: PremiumPaywallProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[90%] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl text-center">
             Seja Premium para continuar a falar com a IA
