@@ -59,6 +59,9 @@ export default async function handler(req) {
       throw new Error("API Key is not configured in Vercel environment variables");
     }
 
+    const usedKeySource = OPENAI_API_KEY === process.env.LOVABLE_API_KEY ? "LOVABLE_API_KEY" : "OPENAI_API_KEY";
+    console.log(`Using API Key from: ${usedKeySource}`);
+
     // Build personalized system prompt with onboarding context
     let personalizedPrompt = SYSTEM_PROMPT;
     if (onboardingContext) {
@@ -98,11 +101,22 @@ Use essas informações para entender profundamente o contexto do usuário, mas 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ 
-        error: "Erro ao conectar com a IA", 
+      
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(errorText);
+      } catch (e) {
+        errorDetails = { error: { message: errorText } };
+      }
+
+      const errorMessage = errorDetails?.error?.message || errorText;
+      const finalError = JSON.stringify({
+        error: "Erro ao conectar com a IA",
         details: errorText,
-        status: response.status 
-      }), {
+        keySource: usedKeySource // Inform user/dev which key failed
+      });
+      
+      return new Response(finalError, {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });

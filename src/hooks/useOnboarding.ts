@@ -65,7 +65,7 @@ export function useOnboarding(userId: string | undefined) {
         // Create profile if it doesn't exist (fallback for users who missed the trigger)
         const { error: createProfileError } = await supabase
           .from("profiles")
-          .insert({ id: userId });
+          .insert({ id: userId, user_id: userId });
 
         if (createProfileError) {
            console.error("Failed to create missing profile:", createProfileError);
