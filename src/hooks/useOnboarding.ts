@@ -54,6 +54,47 @@ export function useOnboarding(userId: string | undefined) {
 
     setIsSaving(true);
     try {
+      // Ensure profile exists before saving answers
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+      if (!profile) {
+        // Create profile if it doesn't exist (fallback for users who missed the trigger)
+        const { error: createProfileError } = await supabase
+          .from("profiles")
+          .insert({ id: userId, email: (await supabase.auth.getUser()).data.user?.email });
+
+        if (createProfileError) {
+           console.error("Failed to create missing profile:", createProfileError);
+           // We try to proceed anyway, but it might fail due to FK constraint
+        }
+      }
+
+try {
+      // Ensure profile exists before saving answers to avoid foreign key constraint errors
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+      if (!profile) {
+        // If profile doesn't exist (race condition with trigger), try to create it
+        const { error: createProfileError } = await supabase
+          .from("profiles")
+          .insert({ id: userId, email: (await supabase.auth.getUser()).data.user?.email })
+          .select()
+          .single();
+          
+        if (createProfileError) {
+           console.warn("Could not ensure profile exists:", createProfileError);
+           // We continue anyway, hoping the trigger caught up or it's a permission issue we can't fix here
+        }
+      }
+
       // Prepare rows for EAV table structure
       const rows = [];
       const timestamp = new Date().toISOString();

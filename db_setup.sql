@@ -41,7 +41,8 @@ create table if not exists public.chat_sessions (
 -- 4. Tabela de Mensagens do Chat (Histórico)
 create table if not exists public.chat_messages (
   id uuid default uuid_generate_v4() primary key,
-  session_id uuid references public.chat_sessions(id) on delete cascade not null,
+  session_id uuid references public.chat_sessions(id) on delete cascade, -- tornado opcional
+  user_id uuid references auth.users(id) on delete cascade, -- adicionado user_id
   role text not null, -- 'user' ou 'assistant'
   content text not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -69,8 +70,9 @@ create policy "Users can update own sessions" on public.chat_sessions for update
 
 -- Chat Messages
 alter table public.chat_messages enable row level security;
-create policy "Users can view own messages" on public.chat_messages for select using (exists (select 1 from public.chat_sessions s where s.id = chat_messages.session_id and s.user_id = auth.uid()));
-create policy "Users can insert own messages" on public.chat_messages for insert with check (exists (select 1 from public.chat_sessions s where s.id = chat_messages.session_id and s.user_id = auth.uid()));
+-- Atualizado para usar user_id diretamente
+create policy "Users can view own messages" on public.chat_messages for select using (auth.uid() = user_id);
+create policy "Users can insert own messages" on public.chat_messages for insert with check (auth.uid() = user_id);
 
 -- Trigger para criar Profile automaticamente ao cadastrar usuário
 create or replace function public.handle_new_user()
