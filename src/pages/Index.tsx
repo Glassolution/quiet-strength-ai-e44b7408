@@ -79,7 +79,7 @@ const Index = () => {
     );
   }
 
-  return <LandingPage onStartChat={handleStartChat} />;
+  return <LandingPage onStartChat={handleStartChat} user={user} />;
 };
 
 export default Index;

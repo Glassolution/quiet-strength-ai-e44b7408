@@ -45,6 +45,13 @@ export function ChatPage({
   const [phase, setPhase] = useState<ChatPhase>(getInitialPhase);
   const [showPaywall, setShowPaywall] = useState(false);
 
+  // Update phase if onboarding status changes (e.g. profile loaded late)
+  useEffect(() => {
+    if (onboardingCompleted && phase === "onboarding") {
+      setPhase(isPremium ? "chat" : "paywall");
+    }
+  }, [onboardingCompleted, isPremium, phase]);
+
   const {
     answers,
     currentQuestionIndex,

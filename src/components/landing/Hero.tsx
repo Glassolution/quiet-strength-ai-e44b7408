@@ -28,9 +28,21 @@ export function Hero({ onStartChat }: HeroProps) {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Button variant="ghost" className="font-medium hover:bg-primary/10" onClick={onStartChat}>
-              Entrar
-            </Button>
+            {user ? (
+              <div className="flex items-center gap-4 animate-in fade-in">
+                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+                  <UserIcon className="w-4 h-4" />
+                  <span>{user.email}</span>
+                </div>
+                <Button variant="default" className="font-medium shadow-lg shadow-primary/20" onClick={onStartChat}>
+                  Ir para o Chat
+                </Button>
+              </div>
+            ) : (
+              <Button variant="ghost" className="font-medium hover:bg-primary/10" onClick={onStartChat}>
+                Entrar
+              </Button>
+            )}
           </div>
         </div>
       </header>
