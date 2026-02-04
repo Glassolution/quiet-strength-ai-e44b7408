@@ -149,20 +149,37 @@ export function useOnboarding(userId: string | undefined) {
     const { data } = await supabase
       .from("onboarding_answers")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
 
-    if (data) {
-      setAnswers({
-        frequency_impact: data.frequency_impact,
-        main_triggers: data.main_triggers || [],
-        main_triggers_other: data.main_triggers_other,
-        high_risk_times: data.high_risk_times || [],
-        previous_attempts: data.previous_attempts || [],
-        previous_attempts_other: data.previous_attempts_other,
-        primary_goal: data.primary_goal,
-        consent_privacy: data.consent_privacy,
+    if (data && data.length > 0) {
+      const newAnswers = { ...INITIAL_ANSWERS };
+      
+      data.forEach((row) => {
+        switch (row.question_key) {
+          case "frequency_impact":
+            newAnswers.frequency_impact = row.answer;
+            break;
+          case "main_triggers":
+            newAnswers.main_triggers = row.answer_array || [];
+            newAnswers.main_triggers_other = row.other_text;
+            break;
+          case "high_risk_times":
+            newAnswers.high_risk_times = row.answer_array || [];
+            break;
+          case "previous_attempts":
+            newAnswers.previous_attempts = row.answer_array || [];
+            newAnswers.previous_attempts_other = row.other_text;
+            break;
+          case "primary_goal":
+            newAnswers.primary_goal = row.answer;
+            break;
+          case "consent_privacy":
+            newAnswers.consent_privacy = row.answer;
+            break;
+        }
       });
+      
+      setAnswers(newAnswers);
     }
   }, [userId]);
 
