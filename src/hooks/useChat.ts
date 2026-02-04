@@ -123,7 +123,16 @@ export function useChat(
           }),
         });
 
-        if (!response.ok) throw new Error("Falha na comunicação com a IA");
+        if (!response.ok) {
+          const rawText = await response.text();
+          console.error("AI Error Response:", rawText);
+          try {
+            const errorData = JSON.parse(rawText);
+            throw new Error(errorData.error || `Erro ${response.status}: ${rawText}`);
+          } catch {
+            throw new Error(`Erro ${response.status}: ${rawText}`);
+          }
+        }
         if (!response.body) throw new Error("Resposta vazia da IA");
 
         const reader = response.body.getReader();

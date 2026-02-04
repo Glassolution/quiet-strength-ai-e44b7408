@@ -4,7 +4,6 @@ import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
   id: string;
-  user_id: string;
   is_premium: boolean;
   onboarding_completed: boolean;
 }
@@ -28,7 +27,7 @@ export function useAuth() {
             const { data } = await supabase
               .from("profiles")
               .select("*")
-              .eq("user_id", session.user.id)
+              .eq("id", session.user.id)
               .single();
             setProfile(data);
           }, 0);
@@ -125,7 +124,7 @@ export function useAuth() {
     const { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("id", user.id)
       .single();
     setProfile(data);
   };
