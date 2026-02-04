@@ -182,7 +182,7 @@ export function useChat(
         }
       } catch (err) {
         console.error("Chat error:", err);
-        setError("Não foi possível conectar com a IA. Tente novamente.");
+        setError(err instanceof Error ? err.message : "Não foi possível conectar com a IA. Tente novamente.");
         setIsTyping(false);
       } finally {
         setIsTyping(false);
